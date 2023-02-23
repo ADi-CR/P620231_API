@@ -44,6 +44,25 @@ namespace P620231_API.Controllers
             return user;
         }
 
+        [HttpGet("ValidateUserLogin")]
+        public async Task<ActionResult<User>> ValidateUserLogin(string pUserName, string pPassword)
+        {
+            //TODO: encriptar el password para validar contra el password encriptado en DB
+
+            var user = await _context.Users.SingleOrDefaultAsync(e => e.Email == pUserName &&
+                                                                 e.LoginPassword == pPassword);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return user;
+
+        }
+
+
+
         // GET: api/Users/GetUserData
         //Este get permite obtener la info de un usuario 
         //recibiendo el email como parámetro de búsqueda
