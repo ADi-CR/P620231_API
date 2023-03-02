@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using P620231_API.Models;
 using P620231_API.Attributes;
 using P620231_API.ModelsDTOs;
+using P620231_API.Tools;
 
 namespace P620231_API.Controllers
 {
@@ -18,9 +19,13 @@ namespace P620231_API.Controllers
     {
         private readonly P620231_AutoAppoContext _context;
 
+        public Crypto MyCrypto { get; set; }
+
         public UsersController(P620231_AutoAppoContext context)
         {
             _context = context;
+
+            MyCrypto = new Crypto();
         }
 
         // GET: api/Users
@@ -47,10 +52,12 @@ namespace P620231_API.Controllers
         [HttpGet("ValidateUserLogin")]
         public async Task<ActionResult<User>> ValidateUserLogin(string pUserName, string pPassword)
         {
-            //TODO: encriptar el password para validar contra el password encriptado en DB
+            //encriptar el password para validar contra el password encriptado en DB
+
+            string EncriptedPassword = MyCrypto.EncriptarEnUnSentido(pPassword);
 
             var user = await _context.Users.SingleOrDefaultAsync(e => e.Email == pUserName &&
-                                                                 e.LoginPassword == pPassword);
+                                                                 e.LoginPassword == EncriptedPassword);
 
             if (user == null)
             {
@@ -161,6 +168,10 @@ namespace P620231_API.Controllers
         [HttpPost]
         public async Task<ActionResult<User>> PostUser(User user)
         {
+            string EncriptedPassword = MyCrypto.EncriptarEnUnSentido(user.LoginPassword);
+
+            user.LoginPassword = EncriptedPassword;
+
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
